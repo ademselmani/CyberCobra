@@ -1,46 +1,76 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 function formatDate(dateString) {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function ReportComponent({ report, onDelete, onEdit }) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [summary, setSummary] = useState("");
+
+  const handleSummarizing = async () => {
+    try {
+      const token = sessionStorage.getItem("access");
+      const response = await fetch(`http://127.0.0.1:8000/report/summarize/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject: report.subject,
+          body: report.body
+        }),  // Send as object
+      });
+
+     if (response.ok) {
+      const data = await response.json(); // Parse the JSON response
+      setSummary(data.message); // Access the message from the response data
+    } else {
+      console.error("Server responded with status:", response.status);
+    }
+  } catch (error) {
+    console.error("Error summarizing report:", error);
+  }
+  };
 
   // Add delete handler function
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this report?")) {
       try {
-        const token = sessionStorage.getItem('access')
-        const response = await fetch(`http://127.0.0.1:8000/report/${report.id}/`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const token = sessionStorage.getItem("access");
+        const response = await fetch(
+          `http://127.0.0.1:8000/report/${report.id}/`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        })
-        
+        );
+
         if (response.ok) {
-          onDelete(report.id) // Call parent to update state
+          onDelete(report.id); // Call parent to update state
         }
       } catch (error) {
-        console.error('Error deleting report:', error)
+        console.error("Error deleting report:", error);
       }
     }
-  } // Added missing closing brace
+  }; // Added missing closing brace
 
   // Edit handler - moved outside handleDelete
   const handleEdit = () => {
     onEdit(report);
   };
 
-  if (!report) return null
+  if (!report) return null;
 
   return (
     <div className="bg-surface border border-border rounded-lg p-6 mb-4">
@@ -52,12 +82,12 @@ export default function ReportComponent({ report, onDelete, onEdit }) {
           </p>
         </div>
         <button
-            onClick={handleEdit}
-            className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
-          >
-            Edit
-          </button>
-          
+          onClick={handleEdit}
+          className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
+        >
+          Edit
+        </button>
+
         <button
           onClick={handleDelete}
           className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm hover:bg-red-500/30 transition-colors"
@@ -100,10 +130,14 @@ export default function ReportComponent({ report, onDelete, onEdit }) {
       {/* Bibliographies */}
       {report.bibliographies && report.bibliographies.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-text-secondary mb-2">Sources</h4>
+          <h4 className="text-sm font-medium text-text-secondary mb-2">
+            Sources
+          </h4>
           <ul className="text-sm text-text space-y-1">
             {report.bibliographies.map((bib, index) => (
-              <li key={index} className="truncate">• {bib}</li>
+              <li key={index} className="truncate">
+                • {bib}
+              </li>
             ))}
           </ul>
         </div>
@@ -112,16 +146,26 @@ export default function ReportComponent({ report, onDelete, onEdit }) {
       {/* Documents */}
       {report.used_documents && report.used_documents.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-text-secondary mb-2">Documents</h4>
+          <h4 className="text-sm font-medium text-text-secondary mb-2">
+            Documents
+          </h4>
           <ul className="text-sm text-text space-y-1">
             {report.used_documents.map((doc, index) => (
-              <li key={index} className="truncate">• {doc}</li>
+              <li key={index} className="truncate">
+                • {doc}
+              </li>
             ))}
           </ul>
         </div>
       )}
-    </div>
-  
-  )
 
-   }
+      <button
+        onClick={handleSummarizing}
+        className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
+      >
+        Summary
+      </button>
+      <div>{summary}</div>
+    </div>
+  );
+}
