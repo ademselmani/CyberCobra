@@ -21,24 +21,24 @@ export default function ReportComponent({ report, onDelete, onEdit }) {
       const response = await fetch(`http://127.0.0.1:8000/report/summarize/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           subject: report.subject,
-          body: report.body
-        }),  // Send as object
+          body: report.body,
+        }), // Send as object
       });
 
-     if (response.ok) {
-      const data = await response.json(); // Parse the JSON response
-      setSummary(data.message); // Access the message from the response data
-    } else {
-      console.error("Server responded with status:", response.status);
+      if (response.ok) {
+        const data = await response.json(); // Parse the JSON response
+        setSummary(data.message); // Access the message from the response data
+      } else {
+        console.error("Server responded with status:", response.status);
+      }
+    } catch (error) {
+      console.error("Error summarizing report:", error);
     }
-  } catch (error) {
-    console.error("Error summarizing report:", error);
-  }
   };
 
   // Add delete handler function
@@ -81,19 +81,20 @@ export default function ReportComponent({ report, onDelete, onEdit }) {
             Department: <span className="capitalize">{report.department}</span>
           </p>
         </div>
-        <button
-          onClick={handleEdit}
-          className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
-        >
-          Edit
-        </button>
-
-        <button
-          onClick={handleDelete}
-          className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm hover:bg-red-500/30 transition-colors"
-        >
-          Delete
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleEdit}
+            className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
+          >
+            Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm hover:bg-red-500/30 transition-colors"
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       {/* Body Preview */}
@@ -159,13 +160,15 @@ export default function ReportComponent({ report, onDelete, onEdit }) {
         </div>
       )}
 
-      <button
-        onClick={handleSummarizing}
-        className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
-      >
-        Summary
-      </button>
-      <div>{summary}</div>
+      <div>
+        <button
+          onClick={handleSummarizing}
+          className="mt-4 px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
+        >
+          Summary
+        </button>
+        <div>{summary}</div>
+      </div>
     </div>
   );
 }
